@@ -52,6 +52,12 @@ When placing a number, the following must be validated:
 2. **Rotation Constraints**: The number must respect rotational restrictions in adjacent cubes.
 3. **4D Chain Rules**: The number must fit the complete chain of restrictions across all cubes in the fourth dimension.
 
+
+## Dependencias
+
+- **GLFW**: Download version 3.3.8 from [glfw.org](https://www.glfw.org/download.html) and place it in the folder `/lib/glfw/`.
+- **GLAD**: Generates GLAD files in [glad.dav1d.de](https://glad.dav1d.de/) and place them in the folder `/lib/glad/`.
+
 ---
 
 Feel free to explore the code, report issues, or contribute improvements.

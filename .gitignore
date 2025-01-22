@@ -1,0 +1,42 @@
+# CMake files
+/build/
+/out/
+/CMakeFiles/
+/cmake-build-*/
+
+# VS Code files
+/.vs/
+/.vscode/
+/*.sln
+/*.vcxproj
+/*.vcxproj.filters
+/*.vcxproj.user
+/*.suo
+/*.opensdf
+/*.sdf
+/*.log
+
+# Compiled files
+/*.obj
+/*.pch
+/*.pdb
+/*.ilk
+/*.exe
+/*.dll
+/*.lib
+
+# System files
+.DS_Store
+Thumbs.db
+
+
+# Ignore GLFW and GLAD files
+/lib/glad/src/glad.o
+/lib/glad/src/glad.a
+
+# Ignore build files
+/debug/
+/release/
+
+# Ignore all lib files
+/lib/
