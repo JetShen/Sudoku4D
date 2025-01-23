@@ -9,7 +9,14 @@ file(GLOB GLAD_SOURCES ${CMAKE_SOURCE_DIR}/lib/glad/src/glad.c)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib/glm)
 
-set(SOURCES src/main.cpp)
+# Agregar los archivos fuente adicionales
+set(SOURCES
+    src/main.cpp
+    src/shader.cpp
+    src/camera.cpp
+    src/model.cpp
+)
+
 add_executable(Sudoku4D ${SOURCES} ${GLAD_SOURCES})
 
 target_link_libraries(Sudoku4D glfw)
