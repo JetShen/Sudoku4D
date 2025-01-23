@@ -1,36 +1,27 @@
-include(FetchContent)
-
-# GLFW
-FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG 3.3.8
-)
-FetchContent_MakeAvailable(glfw)
-
-# GLAD
-FetchContent_Declare(
-    glad
-    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-    GIT_TAG v0.1.36
-)
-FetchContent_MakeAvailable(glad)
-
 cmake_minimum_required(VERSION 3.10)
-project(MiProyectoOpenGL)
+project(Sudoku4DOpenGL)
 
-set(CMAKE_C_STANDARD 99)
+# Configura GLFW
+set(GLFW_DIR ${CMAKE_SOURCE_DIR}/lib/glfw)
+add_subdirectory(${GLFW_DIR} ${CMAKE_BINARY_DIR}/glfw)
 
-# GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(lib/glfw)
+# Configura GLAD
+include_directories(${CMAKE_SOURCE_DIR}/lib/glad/include)
+file(GLOB GLAD_SOURCES ${CMAKE_SOURCE_DIR}/lib/glad/src/glad.c)
 
-# GLAD
-include_directories(lib/glad/include)
-file(GLOB GLAD_SOURCES "lib/glad/src/glad.c")
+# Configura GLM
+include_directories(${CMAKE_SOURCE_DIR}/lib/glm)
 
-# exe
-add_executable(MiProyecto src/main.c ${GLAD_SOURCES})
-target_link_libraries(MiProyecto glfw)
+# Configura el ejecutable
+set(SOURCES src/main.cpp)
+add_executable(Sudoku4D ${SOURCES} ${GLAD_SOURCES})
+
+# Enlaza GLFW
+target_link_libraries(Sudoku4D glfw)
+
+# Enlaza OpenGL
+if (WIN32)
+    target_link_libraries(Sudoku4D opengl32)
+else()
+    target_link_libraries(Sudoku4D GL)
+endif()
