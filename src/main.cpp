@@ -1,6 +1,10 @@
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "shader.h"
 #include "camera.h"
 #include "model.h"
@@ -13,7 +17,7 @@ void rotateCubeWithMouse(GLFWwindow* window, glm::mat4& model);
 // Variables globales para la rotación del cubo
 bool rotateCube = false;
 double lastMouseX = 0, lastMouseY = 0;
-float rotationX = 0.0f, rotationY = 0.0f;
+glm::quat rotationX = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), rotationY = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
 int main() {
     if (!glfwInit()) {
@@ -60,6 +64,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     // Bucle principal
+    // Bucle principal
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
@@ -76,7 +81,11 @@ int main() {
         shader.setMat4("model", model);
         shader.setMat4("view", camera.getViewMatrix());
         shader.setMat4("projection", camera.getProjectionMatrix());
-        cube.draw();
+        shader.setColor("color", glm::vec4(1.0f, 0.5f, 0.2f, 1.0f));  // Color naranja
+        cube.drawFaces();
+
+        shader.setColor("color", glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));  // Color negro
+        cube.drawEdges();
 
         // Intercambiar búferes y procesar eventos
         glfwSwapBuffers(window);
@@ -112,20 +121,27 @@ void rotateCubeWithMouse(GLFWwindow* window, glm::mat4& model) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        float xoffset = xpos - lastMouseX;
-        float yoffset = lastMouseY - ypos;
+        float xoffset = lastMouseX - xpos;  // Invertir el signo
+        float yoffset = ypos - lastMouseY;  // Invertir el signo
         lastMouseX = xpos;
         lastMouseY = ypos;
 
-        float sensitivity = 0.5f;
+        float sensitivity = 0.005f;  // Ajusta este valor según sea necesario
         xoffset *= sensitivity;
         yoffset *= sensitivity;
 
-        rotationX += yoffset;
-        rotationY += xoffset;
+        // Crear cuaterniones para las rotaciones en X e Y
+        glm::quat deltaRotationX = glm::angleAxis(yoffset, glm::vec3(1.0f, 0.0f, 0.0f));  // Rotar en X
+        glm::quat deltaRotationY = glm::angleAxis(xoffset, glm::vec3(0.0f, 1.0f, 0.0f));  // Rotar en Y
 
-        model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(rotationX), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(rotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+        // Aplicar las rotaciones acumuladas
+        rotationX = deltaRotationX * rotationX;
+        rotationY = deltaRotationY * rotationY;
     }
+
+    // Combinar las rotaciones en X e Y
+    glm::quat finalRotation = rotationY * rotationX;
+
+    // Convertir el cuaternión a una matriz de transformación
+    model = glm::mat4_cast(finalRotation);
 }
