@@ -1,10 +1,10 @@
+#include <glad/glad.h>
 #include "shader.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-    // Cargar y compilar los shaders
     std::string vertexCode, fragmentCode;
     std::ifstream vShaderFile, fShaderFile;
 
@@ -70,14 +70,10 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     glDeleteShader(fragment);
 }
 
-void Shader::use() {
+void Shader::use() const { // Corrected "const" qualifier
     glUseProgram(ID);
 }
 
-void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const {
+void Shader::setMat4(const std::string& name, const glm::mat4& mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-}
-
-void Shader::setColor(const std::string &name, const glm::vec4 &color) const {
-    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &color[0]);
 }

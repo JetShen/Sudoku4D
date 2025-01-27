@@ -1,20 +1,14 @@
 #include "camera.h"
+#include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera(glm::vec3 position, glm::vec3 target, glm::vec3 up, float fov, float aspectRatio, float near, float far)
-    : position(position), target(target), up(up), fov(fov), aspectRatio(aspectRatio), near(near), far(far) {}
-
-glm::mat4 Camera::getViewMatrix() {
-    return glm::lookAt(position, target, up);
+Camera::Camera(glm::vec3 position, float aspect) : position(position) {
+    view = glm::lookAt(position, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 }
 
-glm::mat4 Camera::getProjectionMatrix() {
-    return glm::perspective(glm::radians(fov), aspectRatio, near, far);
-}
+glm::mat4 Camera::getView() const { return view; }
+glm::mat4 Camera::getProj() const { return projection; }
 
-void Camera::setPosition(glm::vec3 position) {
-    this->position = position;
-}
-
-void Camera::setTarget(glm::vec3 target) {
-    this->target = target;
+void Camera::updateAspect(float aspect) {
+    projection = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 }
