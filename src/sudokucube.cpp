@@ -1,3 +1,4 @@
+#define GLM_FORCE_CTOR_INIT
 #include "sudokucube.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "shader.h"
@@ -32,7 +33,7 @@ SudokuCube::SudokuCube() {
 }
 
 void SudokuCube::drawFaces(Shader& shader, int activeLayer, int axis) {
-    glm::mat4 globalRotMatrix = glm::mat4_cast(globalRotation);
+    glm::mat4 globalRotMatrix = glm::mat4(1.0f) * glm::mat4_cast(globalRotation);
     for (int x = 0; x < 9; x++) {
         for (int y = 0; y < 9; y++) {
             for (int z = 0; z < 9; z++) {
@@ -55,7 +56,7 @@ void SudokuCube::drawFaces(Shader& shader, int activeLayer, int axis) {
                     glm::mat4 cellTransform = cells[x][y][z]->getTransform();
                     glm::mat4 modelMatrix = globalRotMatrix * cellTransform;
                     shader.setMat4("model", modelMatrix);
-                    cells[x][y][z]->drawFaces();
+                    cells[x][y][z]->draw();
                 }
 
             }

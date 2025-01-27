@@ -21,6 +21,8 @@ set(SOURCES
     src/camera.cpp
     src/model.cpp
     src/shader.cpp
+    src/sudokucube.cpp 
+    src/utils.cpp
 )
 
 add_executable(Sudoku4D ${SOURCES} ${GLAD_SOURCES})

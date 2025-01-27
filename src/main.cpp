@@ -4,6 +4,8 @@
 #include "shader.h"
 #include "camera.h"
 #include "model.h"
+#include "sudokucube.h"
+
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -44,10 +46,10 @@ int main() {
         4, 0, 3, 3, 7, 4, 3, 2, 6, 6, 7, 3, 4, 5, 1, 1, 0, 4
     };
 
-    Model cube(vertices, indices);
+    SudokuCube sudokuCube;
 
-    // Camera setup
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), 800.0f/600.0f);
+    // Camera setup: Move camera further back to see the grid
+    Camera camera(glm::vec3(5.0f, 15.0f, 15.0f), 800.0f/600.0f); 
 
     glEnable(GL_DEPTH_TEST);
 
@@ -58,17 +60,19 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
+        // Set the color uniform (add this line)
+        shader.setVec4("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); 
         shader.setMat4("view", camera.getView());
         shader.setMat4("proj", camera.getProj());
 
-        // Draw cube
-        glm::mat4 model = glm::mat4(1.0f);
-        shader.setMat4("model", model);
-        cube.draw();
+        sudokuCube.drawFaces(shader, 0, 1); // Draw the middle layer (adjust as needed)
+        // sudokuCube.drawFaces(shader, 4, 1); // Y-axis layer
+        // sudokuCube.drawFaces(shader, 4, 2); // Z-axis layer
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
 
     glfwTerminate();
     return 0;
