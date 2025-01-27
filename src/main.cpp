@@ -6,19 +6,21 @@
 #include "model.h"
 #include "sudokucube.h"
 
+void framebufferSizeCallback(GLFWwindow *window, int width, int height);
+void processInput(GLFWwindow *window, SudokuCube &sudokuCube);
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
-
-int main() {
+int main()
+{
     // Initialize GLFW and create window
-    if (!glfwInit()) {
+    if (!glfwInit())
+    {
         std::cerr << "Failed to initialize GLFW\n";
         return -1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "3D Sudoku", nullptr, nullptr);
-    if (!window) {
+    GLFWwindow *window = glfwCreateWindow(800, 600, "3D Sudoku", nullptr, nullptr);
+    if (!window)
+    {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
         return -1;
@@ -27,7 +29,8 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
         std::cerr << "Failed to initialize GLAD\n";
         return -1;
     }
@@ -37,31 +40,30 @@ int main() {
 
     // Define cube geometry
     std::vector<float> vertices = {
-        -0.5f, -0.5f, -0.5f,  0.5f, -0.5f, -0.5f,  0.5f,  0.5f, -0.5f, -0.5f,  0.5f, -0.5f,
-        -0.5f, -0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f,  0.5f,  0.5f, -0.5f,  0.5f,  0.5f
-    };
+        -0.5f, -0.5f, -0.5f, 0.5f, -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f,
+        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f};
 
     std::vector<unsigned int> indices = {
         0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 5, 4, 7, 7, 6, 5,
-        4, 0, 3, 3, 7, 4, 3, 2, 6, 6, 7, 3, 4, 5, 1, 1, 0, 4
-    };
+        4, 0, 3, 3, 7, 4, 3, 2, 6, 6, 7, 3, 4, 5, 1, 1, 0, 4};
 
     SudokuCube sudokuCube;
 
     // Camera setup: Move camera further back to see the grid
-    Camera camera(glm::vec3(5.0f, 15.0f, 15.0f), 800.0f/600.0f); 
+    Camera camera(glm::vec3(5.0f, 15.0f, 15.0f), 800.0f / 600.0f);
 
     glEnable(GL_DEPTH_TEST);
 
     // Main loop
-    while (!glfwWindowShouldClose(window)) {
-        processInput(window);
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput(window, sudokuCube);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
         // Set the color uniform (add this line)
-        shader.setVec4("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)); 
+        shader.setVec4("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         shader.setMat4("view", camera.getView());
         shader.setMat4("proj", camera.getProj());
 
@@ -73,16 +75,48 @@ int main() {
         glfwPollEvents();
     }
 
-
     glfwTerminate();
     return 0;
 }
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+{
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow *window, SudokuCube &sudokuCube)
+{
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    float rotationSpeed = 1.0f;
+
+    // Rotate around the Y-axis (vertical) for left/right arrow keys
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        // Positive Y rotation (left turn)
+        sudokuCube.rotate(glm::quat(glm::vec3(0.0f, glm::radians(rotationSpeed), 0.0f)));
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        // Negative Y rotation (right turn)
+        sudokuCube.rotate(glm::quat(glm::vec3(0.0f, glm::radians(-rotationSpeed), 0.0f)));
+    }
+
+    // Rotate around the X-axis (horizontal) for up/down arrow keys
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        // Positive X rotation (forward tilt)
+        sudokuCube.rotate(glm::quat(glm::vec3(glm::radians(rotationSpeed), 0.0f, 0.0f)));
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        // Negative X rotation (backward tilt)
+        sudokuCube.rotate(glm::quat(glm::vec3(glm::radians(-rotationSpeed), 0.0f, 0.0f)));
+    }
+
+    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    // {
+    //     sudokuCube.resetRotation();
+    // }
 }
