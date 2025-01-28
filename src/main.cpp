@@ -7,7 +7,7 @@
 #include "sudokucube.h"
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window, SudokuCube &sudokuCube);
+void processInput(GLFWwindow* window, SudokuCube& sudokuCube, int& activeLayer, int& axis, double& lastLayerChangeTime);
 
 int main()
 {
@@ -54,10 +54,16 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
+    // Initialize active layer and axis
+    int activeLayer = 4; // Start with the middle layer
+    int axis = 1;
+    
+    double lastLayerChangeTime = glfwGetTime();
+    const double layerChangeCooldown = 0.2;     
     // Main loop
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window, sudokuCube);
+        processInput(window, sudokuCube, activeLayer, axis, lastLayerChangeTime);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -67,9 +73,7 @@ int main()
         shader.setMat4("view", camera.getView());
         shader.setMat4("proj", camera.getProj());
 
-        sudokuCube.drawFaces(shader, 0, 1); // Draw the middle layer (adjust as needed)
-        // sudokuCube.drawFaces(shader, 4, 1); // Y-axis layer
-        // sudokuCube.drawFaces(shader, 4, 2); // Z-axis layer
+        sudokuCube.drawFaces(shader, activeLayer, axis); 
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -84,39 +88,47 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window, SudokuCube &sudokuCube)
-{
+
+void processInput(GLFWwindow* window, SudokuCube& sudokuCube, int& activeLayer, int& axis, double& lastLayerChangeTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     float rotationSpeed = 1.0f;
 
-    // Rotate around the Y-axis (vertical) for left/right arrow keys
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        // Positive Y rotation (left turn)
+    // Rotate around the Y-axis (vertical) for a/d 
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         sudokuCube.rotate(glm::quat(glm::vec3(0.0f, glm::radians(rotationSpeed), 0.0f)));
     }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        // Negative Y rotation (right turn)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         sudokuCube.rotate(glm::quat(glm::vec3(0.0f, glm::radians(-rotationSpeed), 0.0f)));
     }
 
-    // Rotate around the X-axis (horizontal) for up/down arrow keys
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        // Positive X rotation (forward tilt)
+    // Rotate around the X-axis (horizontal) for w/s
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         sudokuCube.rotate(glm::quat(glm::vec3(glm::radians(rotationSpeed), 0.0f, 0.0f)));
     }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        // Negative X rotation (backward tilt)
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
         sudokuCube.rotate(glm::quat(glm::vec3(glm::radians(-rotationSpeed), 0.0f, 0.0f)));
     }
 
-    // if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-    // {
-    //     sudokuCube.resetRotation();
-    // }
+    // Time-based layer navigation
+    double currentTime = glfwGetTime();
+    if (currentTime - lastLayerChangeTime >= 0.2) { // Cooldown of 0.2 seconds
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            activeLayer = (activeLayer + 1) % 9; // Move to the next layer
+            lastLayerChangeTime = currentTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            activeLayer = (activeLayer - 1 + 9) % 9; // Move to the previous layer
+            lastLayerChangeTime = currentTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            axis = (axis - 1 + 3) % 3; // Switch to the previous axis (X, Y, Z)
+            lastLayerChangeTime = currentTime;
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            axis = (axis + 1) % 3; // Switch to the next axis (X, Y, Z)
+            lastLayerChangeTime = currentTime;
+        }
+    }
 }
